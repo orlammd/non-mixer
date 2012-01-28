@@ -1,5 +1,6 @@
 /*******************************************************************************/
 /* Copyright (C) 2009 Jonathan Moore Liles                                     */
+/* Copyright (C) 2012 Aurélien Roux (OSC part)                                 */
 /*                                                                             */
 /* This program is free software; you can redistribute it and/or modify it     */
 /* under the terms of the GNU General Public License as published by the       */
@@ -188,6 +189,34 @@ Controller_Module::mode ( Mode m )
         jack_input.pop_back();
 
         chain()->engine()->unlock();
+    }
+    else if( mode() != CV && m == OSC)
+    {
+      const char *path = fl_input("Enter OSC path to watch for");
+      if( path )
+      {
+	const char *ptype = fl_input("Enter type");
+	if( ptype )
+	{
+	  int i=0;
+	  while( ptype[i] )
+	  {
+	    switch( ptype[i] )
+	    {
+	    case 'i':
+	      fl_alert("Type param %d : integer\n", i);
+	      break;
+	    case 'f':
+	      fl_alert("Type param %d : float\n", i);
+	      break;
+	    case 's':
+	      fl_alert("Type param %d : string\n", i);
+	      break;
+	    }
+	    i++;
+	  }
+	}
+      }
     }
 
     _mode = m ;
@@ -461,6 +490,8 @@ Controller_Module::menu_cb ( const Fl_Menu_ *m )
         mode( GUI );
     else if ( ! strcmp( picked, "Mode/Control Voltage" ) )
         mode( CV );
+    else if ( ! strcmp( picked, "Mode/Open Sound Control (OSC)" ) )
+        mode( OSC );
 }
 
 /** build the context menu for this control */
@@ -474,7 +505,7 @@ Controller_Module::menu ( void )
             { "Mode",             0, 0, 0,  FL_SUBMENU    },
             { "Manual",       0, 0, 0,  FL_MENU_RADIO | ( mode() == GUI ? FL_MENU_VALUE : 0 ) },
             { "Control Voltage",           0, 0, 0,  FL_MENU_RADIO | ( mode() == CV ? FL_MENU_VALUE : 0 ) },
-//            { "Open Sound Control (OSC)",          0, 0, 0,  FL_MENU_RADIO | ( mode() == OSC  ? FL_MENU_VALUE : 0 ) },
+            { "Open Sound Control (OSC)",          0, 0, 0,  FL_MENU_RADIO | ( mode() == OSC  ? FL_MENU_VALUE : 0 ) },
             { 0                   },
             { 0 },
         };
@@ -573,5 +604,8 @@ Controller_Module::process ( nframes_t nframes )
         *((float*)control_output[0].buffer()) = f;
 
         control_value = f;
+
+	//	fprintf(stderr,"control_value: %f\n", control_value);
+	//	fl_alert("control_value: %f", control_value);
     }
 }

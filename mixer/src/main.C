@@ -1,6 +1,7 @@
 
 /*******************************************************************************/
 /* Copyright (C) 2008 Jonathan Moore Liles                                     */
+/* Copyright (C) 2012 Aurélien Roux (OSC part)                                 */
 /*                                                                             */
 /* This program is free software; you can redistribute it and/or modify it     */
 /* under the terms of the GNU General Public License as published by the       */
@@ -34,6 +35,7 @@
 #include <FL/Boxtypes.H>
 #include "Thread.H"
 #include "debug.h"
+#include <getopt.h>
 
 #include "Mixer.H"
 #include "Project.H"
@@ -51,6 +53,7 @@
 #include "Mono_Pan_Module.H"
 #include "Chain.H"
 #include "Mixer_Strip.H"
+
 
 
 /* TODO: put these in a header */
@@ -138,41 +141,61 @@ main ( int argc, char **argv )
     }
 
     {
-        int r = argc - 1;
-        int i = 1;
-        for ( ; i < argc; ++i, --r )
-        {
-            if ( !strcmp( argv[i], "--instance" ) )
-            {
-                if ( r > 1 )
-                {
-                    MESSAGE( "Using instance name \"%s\"", argv[i+1] );
-                    instance_name = argv[i+1];
-                    ++i;
-                }
-                else
-                {
-                    FATAL( "Missing instance name" );
-                }
-            }
-            else if ( !strncmp( argv[i], "--", 2 ) )
-            {
-                WARNING( "Unrecognized option: %s", argv[i] );
-            }
-            else
-                break;
-        }
+      int c;
 
-        if ( r >= 1 )
-        {
-            MESSAGE( "Loading \"%s\"", argv[i] );
+      while(1)
+      {
+	static struct option long_options[] = 
+	{
+	  {"instance", required_argument, 0, 'i'},
+	  {"listen_port", required_argument, 0, 'l'},
+	  {"control_port", required_argument, 0, 'c'},
+	  {0, 0, 0, 0}
+	};
+	
+	int option_index;
 
-            if ( ! mixer->command_load( argv[i] ) )
-            {
-                fl_alert( "Error opening project specified on commandline" );
-            }
-        }
+	c = getopt_long (argc, argv, "i:l:c:", long_options, &option_index);
 
+	if ( c == -1)
+	  break;
+
+	switch( c )
+	{
+	case 'i':
+	  MESSAGE( "Using instance name \"%s\"", optarg );
+	  instance_name = optarg;
+	  break;
+	case 'l':
+	  MESSAGE("Using OSC listen port %s", optarg);
+	  break;
+	case 'c':
+	  MESSAGE("Using OSC contol port %s", optarg);
+	  break;
+	case '?':
+	  printf("erreur dans les options\n");
+	default:
+	  abort();
+	}
+
+      }
+
+      if ( optind < argc )
+      {
+	if( argc - optind < 2 )
+	{
+	  MESSAGE( "Loading \"%s\"", argv[optind] );
+	  
+	  if ( ! mixer->command_load( argv[optind] ) )
+	  {
+	    fl_alert( "Error opening project specified on commandline" );
+	  }
+	}
+	else
+	{
+	  fl_alert( "Invalid project name on commandline" );
+	}
+      }
     }
 
     Fl::run();
