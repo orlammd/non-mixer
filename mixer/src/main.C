@@ -42,6 +42,8 @@
 
 #include "Loggable.H"
 
+#include "OSC_Server.H"
+
 /* for registration */
 #include "Module.H"
 #include "Gain_Module.H"
@@ -55,7 +57,6 @@
 #include "Mixer_Strip.H"
 
 
-
 /* TODO: put these in a header */
 #define USER_CONFIG_DIR ".non-mixer/"
 
@@ -63,6 +64,7 @@ char *user_config_dir;
 Mixer *mixer;
 
 const char *instance_name;
+int listen_port;
 
 #include <errno.h>
 
@@ -83,6 +85,7 @@ static void cb_main ( Fl_Double_Window *o, void *)
     if ( Fl::event_key() != FL_Escape )
         o->hide();
 }
+
 
 int
 main ( int argc, char **argv )
@@ -149,7 +152,7 @@ main ( int argc, char **argv )
 	{
 	  {"instance", required_argument, 0, 'i'},
 	  {"listen_port", required_argument, 0, 'l'},
-	  {"control_port", required_argument, 0, 'c'},
+	  //	  {"control_port", required_argument, 0, 'c'},
 	  {0, 0, 0, 0}
 	};
 	
@@ -168,14 +171,16 @@ main ( int argc, char **argv )
 	  break;
 	case 'l':
 	  MESSAGE("Using OSC listen port %s", optarg);
+	  mixer->set_listen_port( optarg );
+	  mixer->osc_server_start();
+	  
+	  //TODO : utiliser la classe OSC_Server	  OSC_Server *s = oserver = new OSC_Server( optarg );
 	  break;
-	case 'c':
-	  MESSAGE("Using OSC contol port %s", optarg);
-	  break;
+	  //	case 'c':
+	  //MESSAGE("Using OSC contol port %s", optarg);
+	  //break;
 	case '?':
 	  printf("erreur dans les options\n");
-	default:
-	  abort();
 	}
 
       }

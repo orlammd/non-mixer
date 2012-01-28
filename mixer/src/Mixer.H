@@ -26,6 +26,8 @@
 #include <FL/Fl_Pack.H>
 #include "Mixer_Strip.H"
 
+#include "lo/lo.h"
+
 class Fl_Flowpack;
 class Fl_Menu_Bar;
 
@@ -35,6 +37,12 @@ class Mixer : public Fl_Group
 private:
 
     int _rows;
+
+  const char *listen_port;
+
+
+  
+
 
     Fl_Color system_colors[3];
 
@@ -63,6 +71,13 @@ protected:
     int handle ( int m );
 
 public:
+
+  lo_server_thread osc_server;
+
+  const char * get_listen_port( void );
+  int set_listen_port( const char *p );
+
+  int osc_server_start();
 
   int min_h ( void ) const { return Mixer_Strip::min_h() + (18 * 2); }
 

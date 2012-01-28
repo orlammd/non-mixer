@@ -42,10 +42,14 @@
 
 #include "Engine/Engine.H"
 #include "Chain.H"
+#include "Mixer.H"
+
+#include "lo/lo.h"
 
 
 
 const float CONTROL_UPDATE_FREQ = 0.1f;
+static int OSC_Method_Handler_Wrapper(const char *path, const char *types, lo_arg **argv, int argc, void *data, void *user_data);
 
 
 
@@ -168,7 +172,7 @@ Controller_Module::mode ( Mode m )
 
             if ( ! po.activate() )
             {
-                fl_alert( "Could not activate JACK port \"%s\"", po.name() );
+	      fl_alert( "Could not activate JACK port \"%s\"", po.name() );
                 chain()->engine()->unlock();
                 return;
             }
@@ -192,30 +196,14 @@ Controller_Module::mode ( Mode m )
     }
     else if( mode() != CV && m == OSC)
     {
-      const char *path = fl_input("Enter OSC path to watch for");
+      const char *path = NULL, *ptype = NULL;
+      const char *listen_port = mixer->get_listen_port();
+      fl_alert("UDP port is set to: %s", listen_port);
+      path = fl_input("Enter OSC path to watch for (parameter if floating point)");
       if( path )
       {
-	const char *ptype = fl_input("Enter type");
-	if( ptype )
-	{
-	  int i=0;
-	  while( ptype[i] )
-	  {
-	    switch( ptype[i] )
-	    {
-	    case 'i':
-	      fl_alert("Type param %d : integer\n", i);
-	      break;
-	    case 'f':
-	      fl_alert("Type param %d : float\n", i);
-	      break;
-	    case 's':
-	      fl_alert("Type param %d : string\n", i);
-	      break;
-	    }
-	    i++;
-	  }
-	}
+	fprintf(stderr,"%s\n", path);
+	lo_server_thread_add_method(mixer->osc_server, path, "f", OSC_Method_Handler_Wrapper, this);
       }
     }
 
@@ -608,4 +596,22 @@ Controller_Module::process ( nframes_t nframes )
 	//	fprintf(stderr,"control_value: %f\n", control_value);
 	//	fl_alert("control_value: %f", control_value);
     }
+}
+
+
+/**********/
+/* OSC */
+/**********/
+
+static int OSC_Method_Handler_Wrapper(const char *path, const char *types, lo_arg **argv, int argc, void *data, void *user_data)
+{
+  fprintf(stderr, "Path: %s / valeur: %f\n", path, argv[0]->f);
+  ((Controller_Module *)user_data)->OSC_Method_Handler(path, types, argv, argc, data);
+  //  control_value = argv[0]->f;
+}
+
+
+int Controller_Module::OSC_Method_Handler(const char *path, const char *types, lo_arg **argv, int argc, void *data)
+{
+  this->control_value = argv[0]->f;
 }

@@ -38,6 +38,8 @@
 
 #include "file.h"
 
+#include "lo/lo.h"
+
 #include <string.h>
 #include "debug.h"
 
@@ -54,6 +56,13 @@ extern char *user_config_dir;
 
 /*     ((Mixer*)v)->update(); */
 /* } */
+
+
+// void error(int num, const char *msg, const char *path)
+// {
+//     printf("liblo server error %d in path %s: %s\n", num, path, msg);
+//     fflush(stdout);
+// }
 
 
 void Mixer::cb_menu(Fl_Widget* o) {
@@ -222,6 +231,7 @@ Mixer::Mixer ( int X, int Y, int W, int H, const char *L ) :
     color_scheme( "dark" );
 
     _rows = 1;
+    listen_port = NULL;
     box( FL_NO_BOX );
     labelsize( 96 );
     { Fl_Menu_Bar *o = menubar = new Fl_Menu_Bar( X, Y, W, 24 );
@@ -422,6 +432,32 @@ Mixer::rows ( int ideal_rows )
     _rows = ideal_rows;
 
     scroll->redraw();
+}
+
+const char * Mixer::get_listen_port( void )
+{
+  return listen_port;
+}
+
+int Mixer::set_listen_port( const char  *p )
+{
+  listen_port = p;
+  return -1;
+}
+
+
+// TODO: utiliser la classe OSC_Server pour l'OSC et le détacher du mixer
+void error(int num, const char *msg, const char *path)
+{
+    printf("liblo server error %d in path %s: %s\n", num, path, msg);
+    fflush(stdout);
+}
+
+int Mixer::osc_server_start()
+{
+  osc_server = lo_server_thread_new( listen_port, error);
+  lo_server_thread_start(osc_server);
+  return -1;
 }
 
 /** retrun a pointer to the track named /name/, or NULL if no track is named /name/ */

@@ -23,6 +23,8 @@
 #include <vector>
 #include "JACK/Port.H"
 
+#include "lo/lo.h"
+
 class Fl_Menu_Button;
 class Fl_Menu_;
 
@@ -88,6 +90,8 @@ public:
         }
 
     int handle ( int m );
+  int OSC_Method_Handler(const char *path, const char *types, lo_arg **argv, int argc, void *data);
+  //    static int OSC_Method_Handler_Wrapper(const char *path, const char *types, lo_arg **argv, int argc, void *data, void *user_data);
 
 protected:
 
