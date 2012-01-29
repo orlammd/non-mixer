@@ -58,6 +58,7 @@ Controller_Module::Controller_Module ( bool is_default ) : Module( is_default, 5
 //    label( "" );
     box( FL_NO_BOX );
 
+    osc_path = NULL;
     _pad = true;
     control = 0;
     control_value =0.0f;
