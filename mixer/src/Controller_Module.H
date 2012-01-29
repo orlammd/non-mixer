@@ -90,6 +90,8 @@ public:
         }
 
     int handle ( int m );
+
+  const char *osc_path;
   int OSC_Method_Handler(const char *path, const char *types, lo_arg **argv, int argc, void *data);
   //    static int OSC_Method_Handler_Wrapper(const char *path, const char *types, lo_arg **argv, int argc, void *data, void *user_data);
 

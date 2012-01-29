@@ -101,6 +101,10 @@ Controller_Module::get ( Log_Entry &e ) const
     e.add( ":module", m );
     e.add( ":port", m->control_input_port_index( p ) );
     e.add( ":mode", mode() );
+    if( mode() == OSC)
+    {
+      e.add( ":osc_path", osc_path);
+    }
 }
 
 void
@@ -148,9 +152,23 @@ Controller_Module::set ( Log_Entry &e )
 
         if ( ! strcmp( s, ":mode" ) )
         {
+	    if( atoi(v) == 2 )
+	    {
+	      ++i;
+	      const char *sbis, *vbis;
+	      e.get( i, &sbis, &vbis );
+	      if( ! strcmp( sbis, ":osc_path" ) )
+	      {
+		this->osc_path = vbis;
+		MESSAGE("osc_path: %s", vbis);
+	      }
+	    }
             mode( (Mode)atoi( v ) );
+
         }
     }
+
+
 
 }
 
@@ -196,13 +214,21 @@ Controller_Module::mode ( Mode m )
     }
     else if( mode() != CV && m == OSC)
     {
-      const char *path = NULL, *ptype = NULL;
+      const char *path = NULL;//, *ptype = NULL;
       const char *listen_port = mixer->get_listen_port();
-      fl_alert("UDP port is set to: %s", listen_port);
-      path = fl_input("Enter OSC path to watch for (parameter if floating point)");
-      if( path )
+      //fl_alert("UDP port is set to: %s", listen_port);
+      if( !this->osc_path )
       {
-	fprintf(stderr,"%s\n", path);
+	path = fl_input("Enter OSC path to watch for (parameter is floating point)");
+	if( path )
+	{
+	  osc_path = path;
+	  fprintf(stderr,"%s\n", path);
+	  lo_server_thread_add_method(mixer->osc_server, path, "f", OSC_Method_Handler_Wrapper, this);
+	}
+      }
+      else
+      {
 	lo_server_thread_add_method(mixer->osc_server, path, "f", OSC_Method_Handler_Wrapper, this);
       }
     }
@@ -586,6 +612,10 @@ Controller_Module::process ( nframes_t nframes )
                 f = ( f * scale ) + offset;
             }
         }
+	else if( mode() == OSC )
+	{
+	  // Rien à faire, juste pour éviter la mise à jour pour rien
+	}
 //        else
 //            f =  *((float*)control_output[0].buffer());
 

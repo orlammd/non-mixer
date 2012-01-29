@@ -118,6 +118,10 @@ Mixer_Strip::get ( Log_Entry &e ) const
     /* since the default controllers aren't logged, we have to store
      * this setting as part of the mixer strip */
     e.add( ":gain_mode", gain_controller->mode() );
+    if(gain_controller->mode() == 2)
+    {
+      e.add( ":osc_path", gain_controller->osc_path);
+    }
 
 }
 
@@ -149,6 +153,17 @@ Mixer_Strip::set ( Log_Entry &e )
         }
         else if ( ! strcmp( s, ":gain_mode" ) )
         {
+	    if( atoi(v) == 2 )
+	    {
+	      ++i;
+	      const char *sbis, *vbis;
+	      e.get( i, &sbis, &vbis );
+	      if( ! strcmp( sbis, ":osc_path" ) )
+	      {
+		gain_controller->osc_path = vbis;
+		MESSAGE("osc_path: %s", vbis);
+	      }
+	    }
             _gain_controller_mode = atoi( v );
         }
     }
