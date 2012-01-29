@@ -231,7 +231,7 @@ Mixer::Mixer ( int X, int Y, int W, int H, const char *L ) :
     color_scheme( "dark" );
 
     _rows = 1;
-    listen_port = NULL;
+    listen_port = "9000";
     box( FL_NO_BOX );
     labelsize( 96 );
     { Fl_Menu_Bar *o = menubar = new Fl_Menu_Bar( X, Y, W, 24 );

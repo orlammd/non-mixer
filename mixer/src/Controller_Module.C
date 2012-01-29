@@ -94,18 +94,22 @@ Controller_Module::~Controller_Module ( )
 void
 Controller_Module::get ( Log_Entry &e ) const
 {
+  printf("Controller_Module::get() : osc_path: %s\n", osc_path);
     Module::get( e );
 
+    printf("Controller_Module::get() : osc_path: %s\n", osc_path);
     Port *p = control_output[0].connected_port();
     Module *m = p->module();
+    printf("Controller_Module::get() : module: %X osc_path: %s\n", m, osc_path);
 
     e.add( ":module", m );
     e.add( ":port", m->control_input_port_index( p ) );
     e.add( ":mode", mode() );
-    if( mode() == OSC)
-    {
-      e.add( ":osc_path", osc_path);
-    }
+    /*    if( mode() == OSC)
+	  {*/
+    e.add( ":osc_path", osc_path );
+    printf("Controller_Module::get() : module: %X osc_path: %s\n", m, osc_path);
+      //}
 }
 
 void
@@ -160,12 +164,12 @@ Controller_Module::set ( Log_Entry &e )
 	      e.get( i, &sbis, &vbis );
 	      if( ! strcmp( sbis, ":osc_path" ) )
 	      {
-		this->osc_path = vbis;
+		osc_path = vbis;
 		MESSAGE("osc_path: %s", vbis);
+		printf("Controller_Module::set() : osc_path: %s\n", osc_path);
 	      }
 	    }
             mode( (Mode)atoi( v ) );
-
         }
     }
 
@@ -178,6 +182,8 @@ Controller_Module::set ( Log_Entry &e )
 void
 Controller_Module::mode ( Mode m )
 {
+
+  const char * buf_osc_path;
 
     if( mode() != CV && m == CV )
     {
@@ -215,18 +221,23 @@ Controller_Module::mode ( Mode m )
     }
     else if( mode() != CV && m == OSC)
     {
+      Port *p = control_output[0].connected_port();
+      Module *m = p->module();
       const char *path = NULL;//, *ptype = NULL;
       const char *listen_port = mixer->get_listen_port();
-      //fl_alert("UDP port is set to: %s", listen_port);
-      if( !this->osc_path )
+
+      printf("juste avant le test sur osc_path : osc_path: %s\n", osc_path);
+      if( !osc_path )
       {
-	path = fl_input("Enter OSC path to watch for (parameter is floating point)");
+	path = fl_input("Enter OSC path to watch for (parameter is a floating point)");
 	if( path )
 	{
-	  osc_path = path;
+	  buf_osc_path = path;
+	  printf("juste après l'attribution de osc_path : osc_path: %s\n", osc_path);
 	  fprintf(stderr,"%s\n", path);
 	  lo_server_thread_add_method(mixer->osc_server, path, "f", OSC_Method_Handler_Wrapper, this);
 	}
+	free( path );
       }
       else
       {
@@ -234,6 +245,9 @@ Controller_Module::mode ( Mode m )
       }
     }
 
+    Port *popor = control_output[0].connected_port();
+    Module *mod = popor->module();
+    osc_path = buf_osc_path;
     _mode = m ;
 }
 
@@ -646,3 +660,5 @@ int Controller_Module::OSC_Method_Handler(const char *path, const char *types, l
 {
   this->control_value = argv[0]->f;
 }
+
+
