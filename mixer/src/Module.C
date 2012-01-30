@@ -48,7 +48,6 @@ char *Module::_copied_module_settings = 0;
 Module::Module ( int W, int H, const char *L ) : Fl_Group( 0, 0, W, H, L )
 {
     init();
-    const char * osc_path=NULL;
     log_create();
 }
 

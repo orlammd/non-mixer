@@ -118,10 +118,8 @@ Mixer_Strip::get ( Log_Entry &e ) const
     /* since the default controllers aren't logged, we have to store
      * this setting as part of the mixer strip */
     e.add( ":gain_mode", gain_controller->mode() );
-    if(gain_controller->mode() == 2)
-    {
-      e.add( ":osc_path", gain_controller->osc_path);
-    }
+    e.add( ":osc_path", gain_controller->osc_path);
+   
 
 }
 
@@ -362,6 +360,9 @@ Mixer_Strip::init ( )
 
     _gain_controller_mode = 0;
     _chain = 0;
+
+
+
 
 //    box(FL_THIN_UP_BOX);
     box( FL_RFLAT_BOX );

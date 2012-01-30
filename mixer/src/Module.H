@@ -70,7 +70,7 @@ public:
     bool is_default ( void ) const { return _is_default; }
     void is_default ( bool v ) { _is_default = v; }
 
-  const char * osc_path;
+
 
     class Port
     {

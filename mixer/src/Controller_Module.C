@@ -59,6 +59,7 @@ Controller_Module::Controller_Module ( bool is_default ) : Module( is_default, 5
     box( FL_NO_BOX );
 
     osc_path = NULL;
+    printf("initialisation de osc_path à NULL: %s\n", osc_path);
     _pad = true;
     control = 0;
     control_value =0.0f;
@@ -94,13 +95,13 @@ Controller_Module::~Controller_Module ( )
 void
 Controller_Module::get ( Log_Entry &e ) const
 {
-  printf("Controller_Module::get() : osc_path: %s\n", osc_path);
+  //  printf("Controller_Module::get() : osc_path: %s\n", osc_path);
     Module::get( e );
 
-    printf("Controller_Module::get() : osc_path: %s\n", osc_path);
+    //    printf("Controller_Module::get() : osc_path: %s\n", osc_path);
     Port *p = control_output[0].connected_port();
     Module *m = p->module();
-    printf("Controller_Module::get() : module: %X osc_path: %s\n", m, osc_path);
+    //    printf("Controller_Module::get() : module: %X osc_path: %s\n", m, osc_path);
 
     e.add( ":module", m );
     e.add( ":port", m->control_input_port_index( p ) );
@@ -108,7 +109,7 @@ Controller_Module::get ( Log_Entry &e ) const
     /*    if( mode() == OSC)
 	  {*/
     e.add( ":osc_path", osc_path );
-    printf("Controller_Module::get() : module: %X osc_path: %s\n", m, osc_path);
+    // printf("Controller_Module::get() : module: %X osc_path: %s\n", m, osc_path);
       //}
 }
 
@@ -166,7 +167,7 @@ Controller_Module::set ( Log_Entry &e )
 	      {
 		osc_path = vbis;
 		MESSAGE("osc_path: %s", vbis);
-		printf("Controller_Module::set() : osc_path: %s\n", osc_path);
+		// printf("Controller_Module::set() : osc_path: %s\n", osc_path);
 	      }
 	    }
             mode( (Mode)atoi( v ) );
@@ -232,12 +233,11 @@ Controller_Module::mode ( Mode m )
 	path = fl_input("Enter OSC path to watch for (parameter is a floating point)");
 	if( path )
 	{
-	  buf_osc_path = path;
-	  printf("juste après l'attribution de osc_path : osc_path: %s\n", osc_path);
+	  buf_osc_path = strdup( path );
 	  fprintf(stderr,"%s\n", path);
 	  lo_server_thread_add_method(mixer->osc_server, path, "f", OSC_Method_Handler_Wrapper, this);
 	}
-	free( path );
+	//	free( path );
       }
       else
       {
@@ -247,7 +247,7 @@ Controller_Module::mode ( Mode m )
 
     Port *popor = control_output[0].connected_port();
     Module *mod = popor->module();
-    osc_path = buf_osc_path;
+    osc_path = strdup( buf_osc_path );
     _mode = m ;
 }
 
