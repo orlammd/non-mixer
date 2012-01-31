@@ -184,8 +184,6 @@ void
 Controller_Module::mode ( Mode m )
 {
 
-  const char * buf_osc_path;
-
     if( mode() != CV && m == CV )
     {
         if ( control_output[0].connected() )
@@ -227,13 +225,14 @@ Controller_Module::mode ( Mode m )
       const char *path = NULL;//, *ptype = NULL;
       const char *listen_port = mixer->get_listen_port();
 
-      printf("juste avant le test sur osc_path : osc_path: %s\n", osc_path);
+
       if( !osc_path )
       {
 	path = fl_input("Enter OSC path to watch for (parameter is a floating point)");
 	if( path )
 	{
-	  buf_osc_path = strdup( path );
+
+	  osc_path = strdup( path );
 	  fprintf(stderr,"%s\n", path);
 	  lo_server_thread_add_method(mixer->osc_server, path, "f", OSC_Method_Handler_Wrapper, this);
 	}
@@ -247,7 +246,6 @@ Controller_Module::mode ( Mode m )
 
     Port *popor = control_output[0].connected_port();
     Module *mod = popor->module();
-    osc_path = strdup( buf_osc_path );
     _mode = m ;
 }
 
